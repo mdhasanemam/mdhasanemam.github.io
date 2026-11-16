@@ -78,12 +78,24 @@ async function loadGitHubProjects() {
   const grid = document.querySelector('#github-projects');
   const status = document.querySelector('#github-status');
   const cacheKey = `portfolio:github:${GITHUB_USER}`;
-  let repositories;
+  const pick = ({name, full_name, html_url, description, language, topics, stargazers_count, forks_count, fork, archived, pushed_at, updated_at}) =>
+    ({name, full_name, html_url, description, language, topics, stargazers_count, forks_count, fork, archived, pushed_at, updated_at});
+  let repositories, source = 'live', stale;
+  // 1) data/projects.json, refreshed by a GitHub Action: no API limit for visitors.
+  try {
+    const local = await fetch('data/projects.json', {cache: 'no-cache'});
+    if (local.ok) { const list = await local.json(); if (Array.isArray(list) && list.length) { repositories = list; source = 'file'; } }
+  } catch (_) { /* fall through */ }
+  // 2) recent browser cache
   try {
     const cached = JSON.parse(store.get(cacheKey) || 'null');
-    if (cached && Array.isArray(cached.repositories) && Date.now() - cached.savedAt < 6 * 60 * 60 * 1000) repositories = cached.repositories;
+    if (cached && Array.isArray(cached.repositories)) {
+      stale = cached.repositories;
+      if (!repositories && Date.now() - cached.savedAt < 6 * 60 * 60 * 1000) { repositories = stale; source = 'cache'; }
+    }
   } catch (_) { /* Ignore malformed local cache. */ }
   try {
+    // 3) live GitHub API (limited to about 60 requests per hour per IP)
     if (!repositories) {
       let response;
       try {
@@ -94,20 +106,23 @@ async function loadGitHubProjects() {
       if (!response.ok) throw new Error(response.status === 403 || response.status === 429 ? 'GitHub API rate limit reached. Try again later.' : 'GitHub repositories could not be loaded.');
       const data = await response.json();
       if (!Array.isArray(data)) throw new Error('GitHub repositories could not be loaded.');
-      // Keep only the fields the page uses so the cache stays small.
-      repositories = data.map(({name, full_name, html_url, description, language, topics, stargazers_count, forks_count, fork, archived, pushed_at, updated_at}) =>
-        ({name, full_name, html_url, description, language, topics, stargazers_count, forks_count, fork, archived, pushed_at, updated_at}));
+      repositories = data.map(pick);
       store.set(cacheKey, JSON.stringify({savedAt: Date.now(), repositories}));
     }
-    const sorted = repositories.filter((repo) => !repo.fork && !repo.archived).sort((a,b) => rankRepository(b) - rankRepository(a) || new Date(b.pushed_at) - new Date(a.pushed_at));
-    window.portfolioRepositories = sorted;
-    const active = document.querySelector('.filter-chip.active');
-    renderProjectFilter(active ? active.dataset.filter : 'all');
-    status.textContent = `Public repositories from @${GITHUB_USER}; cached in this browser for up to 6 hours.`;
   } catch (error) {
-    grid.innerHTML = `<p class="empty-note">${escapeHTML(error.message)} <a class="text-link" href="https://github.com/${GITHUB_USER}" target="_blank" rel="noopener noreferrer">Browse GitHub ↗</a></p>`;
-    status.textContent = 'Live repository data is temporarily unavailable.';
+    // 4) an older cached copy is better than an error message
+    if (stale) { repositories = stale; source = 'cache'; }
+    else {
+      grid.innerHTML = `<p class="empty-note">${escapeHTML(error.message)} <a class="text-link" href="https://github.com/${GITHUB_USER}" target="_blank" rel="noopener noreferrer">Browse GitHub ↗</a></p>`;
+      status.textContent = 'Live repository data is temporarily unavailable.';
+      return;
+    }
   }
+  const sorted = repositories.filter((repo) => !repo.fork && !repo.archived).sort((a,b) => rankRepository(b) - rankRepository(a) || new Date(b.pushed_at) - new Date(a.pushed_at));
+  window.portfolioRepositories = sorted;
+  const active = document.querySelector('.filter-chip.active');
+  renderProjectFilter(active ? active.dataset.filter : 'all');
+  status.textContent = `Public repositories from @${GITHUB_USER}.`;
 }
 function renderProjectFilter(filter) {
   const grid = document.querySelector('#github-projects');
