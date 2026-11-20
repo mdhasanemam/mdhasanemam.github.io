@@ -10,6 +10,34 @@ const store = {
 
 const escapeHTML = (value = '') => String(value).replace(/[&<>"']/g, (char) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 
+async function renderProfile() {
+  try {
+    const response = await fetch('data/profile.json', {cache: 'no-cache'});
+    if (!response.ok) return; // keep the static fallback already in the HTML
+    const profile = await response.json();
+    if (profile.cv) document.querySelectorAll('a[data-cv]').forEach((link) => { link.href = profile.cv; });
+    const lines = (...parts) => parts.filter(Boolean).map(escapeHTML).join('<br>');
+    const education = Array.isArray(profile.education) ? profile.education.filter((e) => e && e.degree) : [];
+    const eduCard = document.querySelector('#education-card');
+    if (eduCard && education.length) {
+      eduCard.innerHTML = '<span class="card-label">EDUCATION</span>' + education.map((e) =>
+        `<div class="entry"><h3>${escapeHTML(e.degree)}</h3><p>${lines(e.department, e.institution, e.period)}</p></div>`).join('');
+    }
+    const experience = Array.isArray(profile.experience) ? profile.experience.filter((e) => e && e.role) : [];
+    const expCard = document.querySelector('#experience-card');
+    if (expCard && experience.length) {
+      expCard.innerHTML = '<span class="card-label">EXPERIENCE</span>' + experience.map((e) =>
+        `<div class="entry"><h3>${escapeHTML(e.role)}</h3><p>${lines(e.organization, e.period, e.description)}</p></div>`).join('');
+      expCard.hidden = false;
+    }
+    const skills = Array.isArray(profile.skills) ? profile.skills.filter((s) => s && s.title) : [];
+    const grid = document.querySelector('.skills-grid');
+    if (grid && skills.length) {
+      grid.innerHTML = skills.map((s) => `<article class="skill-group"><span class="card-label">${escapeHTML(s.label || '')}</span><h3>${escapeHTML(s.title)}</h3><ul class="skill-list">${(s.items || []).map((item) => `<li>${escapeHTML(item)}</li>`).join('')}</ul></article>`).join('');
+    }
+  } catch (_) { /* the static content in index.html is shown instead */ }
+}
+
 async function renderPublications() {
   const container = document.querySelector('#publication-list');
   try {
@@ -236,7 +264,7 @@ function initMotion() {
 
 document.addEventListener('DOMContentLoaded', () => {
   initTheme(); initNavigation(); initMotion();
-  renderPublications(); loadGitHubProjects();
+  renderPublications(); renderProfile(); loadGitHubProjects();
   initCopyButtons();
   document.querySelectorAll('.filter-chip').forEach((button) => button.addEventListener('click', () => {
     document.querySelectorAll('.filter-chip').forEach((chip) => {chip.classList.toggle('active', chip === button); chip.setAttribute('aria-pressed', String(chip === button));});
