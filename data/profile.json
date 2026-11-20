@@ -1,0 +1,48 @@
+{
+  "cv": "Profile.pdf",
+  "education": [
+    {
+      "degree": "B.Sc. in Computer Science and Engineering",
+      "department": "Department of Electrical and Computer Engineering (ECE)",
+      "institution": "North South University (NSU), Dhaka, Bangladesh",
+      "period": ""
+    }
+  ],
+  "experience": [],
+  "skills": [
+    {
+      "label": "PROGRAMMING",
+      "title": "Languages",
+      "items": [
+        "C",
+        "C++",
+        "Java",
+        "PHP",
+        "SQL"
+      ]
+    },
+    {
+      "label": "AI & RESEARCH",
+      "title": "Areas of interest",
+      "items": [
+        "Machine learning",
+        "Deep learning",
+        "Computer vision",
+        "Multimodal learning",
+        "Knowledge graphs",
+        "Explainable AI"
+      ]
+    },
+    {
+      "label": "ENGINEERING",
+      "title": "Foundations",
+      "items": [
+        "HTML & CSS",
+        "Database systems",
+        "Data structures & algorithms",
+        "Computer networks",
+        "Git & GitHub"
+      ]
+    }
+  ]
+}
