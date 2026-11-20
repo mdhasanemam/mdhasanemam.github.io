@@ -71,3 +71,6 @@ h2{font-family:var(--comic);font-weight:400;text-transform:uppercase;letter-spac
 .flag-fcb{background:repeating-linear-gradient(90deg,#004d98 0 8px,#a50044 8px 16px)}
 .bd-line .flag-bd:hover,.bd-line .flag-fcb:hover{transform:rotate(-6deg) scale(1.15);animation:none}
 @keyframes flag-wave{50%{transform:skewY(-3deg) rotate(-1.5deg)}}
+
+[hidden]{display:none!important}
+.education-card .entry+.entry{border-top:2px dashed var(--edge);margin-top:16px;padding-top:16px}
