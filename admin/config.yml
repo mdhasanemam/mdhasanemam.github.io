@@ -1,0 +1,71 @@
+# Sign in with a fine-grained GitHub token (Contents: read and write, this repo only).
+backend:
+  name: github
+  repo: mdhasanemam/mdhasanemam.github.io
+  branch: main
+
+media_folder: uploads
+public_folder: /uploads
+
+collections:
+  - name: site
+    label: Site content
+    files:
+      - name: profile
+        label: CV, education, experience, skills
+        file: data/profile.json
+        format: json
+        fields:
+          - { name: cv, label: CV (PDF), widget: file, required: false, hint: "Upload a new PDF here. The Download CV buttons update automatically." }
+          - name: education
+            label: Education
+            widget: list
+            summary: "{{fields.degree}}"
+            fields:
+              - { name: degree, label: Degree, widget: string }
+              - { name: department, label: Department, widget: string, required: false }
+              - { name: institution, label: University, widget: string }
+              - { name: period, label: Period (e.g. 2021 - 2025), widget: string, required: false }
+          - name: experience
+            label: Experience / jobs
+            widget: list
+            summary: "{{fields.role}}"
+            required: false
+            fields:
+              - { name: role, label: Role, widget: string }
+              - { name: organization, label: Organization, widget: string, required: false }
+              - { name: period, label: Period, widget: string, required: false }
+              - { name: description, label: Short description, widget: text, required: false }
+          - name: skills
+            label: Skill groups
+            widget: list
+            summary: "{{fields.title}}"
+            fields:
+              - { name: label, label: Small label (e.g. PROGRAMMING), widget: string, required: false }
+              - { name: title, label: Title, widget: string }
+              - { name: items, label: Items, widget: list, field: { name: item, label: Item, widget: string } }
+      - name: publications
+        label: Publications
+        file: data/publications.json
+        format: json
+        fields:
+          - name: publications
+            label: Publications
+            widget: list
+            summary: "{{fields.title}}"
+            fields:
+              - { name: id, label: Short unique id, widget: string }
+              - { name: title, label: Title, widget: string }
+              - { name: authors, label: Authors, widget: string, required: false }
+              - { name: venue, label: Journal / conference, widget: string, required: false }
+              - { name: year, label: Year, widget: string, required: false }
+              - { name: status, label: Status, widget: string, required: false, default: Published }
+              - { name: description, label: Description, widget: text, required: false }
+              - { name: doi, label: DOI (e.g. 10.1109/...), widget: string, required: false }
+              - { name: paperUrl, label: Paper URL, widget: string, required: false }
+              - { name: publisherUrl, label: Publisher URL, widget: string, required: false }
+              - { name: pdfUrl, label: PDF URL, widget: string, required: false }
+              - { name: scholarUrl, label: Scholar URL (filled automatically), widget: string, required: false }
+              - { name: citedBy, label: Cited by (filled automatically), widget: number, required: false }
+              - { name: keywords, label: Keywords, widget: list, required: false, field: { name: keyword, label: Keyword, widget: string } }
+              - { name: visible, label: Show on the website, widget: boolean, default: true }
